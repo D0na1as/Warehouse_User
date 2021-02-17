@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:items="http://www.w3.org/1999/xhtml"
+	  xmlns:item="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bootstrap CRUD Data Table for Database with Modal Form</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+    
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">  
+    
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+		<div class="table-responsive">
+			<div class="table-wrapper">
+				<div class="table-title">
+					<div class="row justify-content-between">
+						<div class="col-xs-6">
+							<h2>Inbound <b>Department</b></h2>
+						</div>
+						<div class="col-xs-6">
+							<a href="#sendItemModal" class="btn btn-success" data-toggle="modal"><span><img th:src="@{/img/cube-send.svg}">  Send</span>
+							</a>
+							<a href="#addItemModal" class="btn btn-info" data-toggle="modal"><span><img th:src="@{/img/plus-circle.svg}">  Add</span></a>
+							<a th:href="@{'/inbound/'}" class="btn btn-info" data-toggle="modal"><span><img th:src="@{/img/reload.svg}">  Refresh</span></a>
+						</div>
+					</div>
+				</div>
+				<div class="pre-table">
+					<div class="row justify-content-between form-group">
+						<div class="col-sx-6">
+							<label class="d-inline-block">Select count: </label>
+							<select class="custom-select-sm border rounded text-muted d-inline-block" required>
+								<option th:value="${page.count}" th:text="${page.count}"></option>
+								<option value="25">25</option>
+								<option value="50">50</option>
+								<option value="100">100</option>
+							</select>
+						</div>
+						<div class="col-sx-6">
+							<form th:action="@{/inbound/search/}" method="GET" class="row">
+								<div class="col-auto">
+									<input type="text" name="value" class="form-control" placeholder="Search">
+								</div>
+								<div class="col-auto">
+									<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th scope="col">Title</th>
+							<th scope="col">Serial Nr.</th>
+							<th scope="col">Description</th>
+							<th scope="col">Place</th>
+                            <th scope="col">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="item:${items}" class="center">
+							<td th:text="${item.title}"></td>
+							<td th:text="${item.serial}"></td>
+							<td th:text="${item.comments}"></td>
+							<td th:text="${item.place}"></td>
+							<td >
+								<a href="#sendItemModal" class="btn btn-light d-inline" data-toggle="modal" th:data-itemid="${item.id}">
+									<span>
+										<img th:src="@{/img/cube-send.svg}" data-toggle="tooltip" data-placement="top" title="Send">
+									</span>
+								</a>
+								<a href="#moveItemModal" class="btn btn-light d-inline" data-toggle="modal" th:data-itemid="${item.id}" th:data-place="${item.place}">
+									<span>
+										<img th:src="@{/img/forklift.svg}" data-toggle="tooltip" data-placement="top" title="Change place">
+									</span>
+								</a>
+								<a href="#editItemModal" class="btn btn-light d-inline" data-toggle="modal"
+								    th:data-id="${item.id}"
+								   	th:data-title="${item.title}"
+								    th:data-serial="${item.serial}"
+									th:data-comments="${item.comments}"
+								   	th:data-place="${item.place}">
+									<span>
+										<img th:src="@{/img/pencil.svg}" data-toggle="tooltip" data-placement="top" title="Edit">
+									</span>
+								</a>
+								<a class="btn btn-light d-inline" th:onClick="popup('/inbound/logs/' + [[${item.id}]],'Test Frame',500, 800)">
+									<span>
+										<img th:src="@{/img/inventory.svg}" data-toggle="tooltip" data-placement="top" title="History">
+									</span>
+								</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="post-table">
+					<div class="clearfix">
+						<div class="row justify-content-between form-group">
+							<div class="col-sx-6">
+								<div class="hint-text">Showing <b th:text="${#lists.size(items)}"></b> out of <b th:text="${page.all}"></b> entries</div>
+							</div>
+							<div class="col-sx-6">
+								<ul class="pagination">
+									<li class="page-item text-muted"><a >Previous</a></li>
+									<select class="custom-select-sm border rounded text-muted d-inline-block" required>
+										<option th:value="${page.current}" th:text="${page.current}"></option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+									</select>
+									<li class="page-item"><a href="#" class="page-link"><b>Next</b></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>        
+    </div>
+	<!-- Send item Modal HTML -->
+	<div id="sendItemModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form th:action="@{/inbound/send}" th:object="${newItem}" method="POST">
+					<div class="modal-header">						
+						<h4 class="modal-title">Send item:</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>Destination</label>
+							<input type="text" th:field="*{to}" class="form-control" required>
+							<input type="text" hidden th:field="*{id}" class="id" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+						<input type="submit" class="btn btn-success" value="Send">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Move item Modal HTML -->
+	<div id="moveItemModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form th:action="@{./update}" th:object="${newItem}" method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Change Items Location:</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<p>Current location: </p>
+							<p id="from"></p>
+						</div>
+						<div class="form-group">
+							<label>Move To Shelf:</label>
+							<input type="text" th:field="*{place}" class="form-control" required>
+							<input type="text" hidden th:field="*{id}" class="id" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+						<input type="submit" class="btn btn-success" value="Move">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Add Item Modal HTML -->
+	<div id="addItemModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form th:action="@{/inbound/add}" th:object="${newItem}" method="POST">
+					<div class="modal-header">						
+						<h4 class="modal-title">Add item to system:</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">					
+						<div class="form-group">
+							<label>Title</label>
+							<input type="text" th:field="*{title}" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label>Serial nr.:</label>
+							<input type="text" th:field="*{serial}" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label>Description</label>
+							<textarea class="form-control" th:field="*{comments}" required></textarea>
+						</div>
+						<div class="form-group">
+							<label>Place</label>
+							<input type="text" th:field="*{place}" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label>Incoming from:</label>
+							<input type="text" th:field="*{from}" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label>Receiving department:</label>
+							<input type="text" th:field="*{to}" class="form-control" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+						<input type="submit" class="btn btn-info" value="Save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Edit Item Modal HTML -->
+	<div id="editItemModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form th:action="@{/inbound/update}" th:object="${newItem}" method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Add item to system:</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>Title</label>
+							<input type="text" th:field="*{title}" id="title" class="form-control" required>
+							<input type="text" hidden th:field="*{id}" class="id" required>
+						</div>
+						<div class="form-group">
+							<label>Serial nr.:</label>
+							<input type="text" th:field="*{serial}" id="serial" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label>Description</label>
+							<textarea class="form-control" th:field="*{comments}" id="comments" required></textarea>
+						</div>
+						<div class="form-group">
+							<label>Place</label>
+							<input type="text" th:field="*{place}" id="place" class="form-control" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+						<input type="submit" class="btn btn-info" value="Save">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Stack item Modal HTML -->
+	<div id="stackItemModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form th:action="@{/inbound/update}" th:object="${newItem}" method="POST">
+					<div class="modal-header">						
+						<h4 class="modal-title">Stack item in shelf:</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<div class="modal-body">					
+						<p>Are you sure you want to delete these Records?</p>
+						<p class="text-warning"><small>This action cannot be undone.</small></p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+						<input type="submit" class="btn btn-danger" value="Delete">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
